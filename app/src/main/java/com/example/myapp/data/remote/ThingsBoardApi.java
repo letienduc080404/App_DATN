@@ -17,4 +17,11 @@ public interface ThingsBoardApi {
             @Path("entityId") String entityId,
             @Query("keys") String keys
     );
+
+    // API lấy danh sách thiết bị của Tenant
+    @GET("api/tenant/devices")
+    Call<JsonObject> getTenantDevices(
+            @Query("pageSize") int pageSize,
+            @Query("page") int page
+    );
 }

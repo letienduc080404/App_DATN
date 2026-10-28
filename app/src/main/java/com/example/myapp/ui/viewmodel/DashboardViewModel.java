@@ -14,7 +14,9 @@ public class DashboardViewModel extends AndroidViewModel {
     private final AgriRepository repository;
     private final LiveData<SensorData> sensorData;
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-
+    private final android.os.Handler refreshHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable refreshRunnable;
+    private boolean isAutoRefreshing = false;
 
     public DashboardViewModel(@NonNull Application application) {
         super(application);
@@ -36,5 +38,47 @@ public class DashboardViewModel extends AndroidViewModel {
         return repository.getErrorEvent();
     }
 
-    // Không cần hàm fetchData() chủ động vì Room sẽ tự đẩy dữ liệu khi MQTT cập nhật
+    /**
+     * Đồng bộ dữ liệu cảm biến mới nhất từ ThingsBoard Server
+     */
+    public void refreshData() {
+        isLoading.postValue(true);
+        repository.syncDataFromThingsBoard();
+        // Tắt loading sau 1s
+        refreshHandler.postDelayed(() -> isLoading.postValue(false), 1000);
+    }
+
+    /**
+     * Bắt đầu tự động làm mới dữ liệu theo chu kỳ (mặc định mỗi 5 giây)
+     */
+    public void startAutoRefresh(long intervalMillis) {
+        if (isAutoRefreshing) return;
+        isAutoRefreshing = true;
+
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isAutoRefreshing) {
+                    repository.syncDataFromThingsBoard();
+                    refreshHandler.postDelayed(this, intervalMillis);
+                }
+            }
+        };
+
+        // Chạy ngay lần đầu và lên lịch các lần tiếp theo
+        refreshRunnable.run();
+    }
+
+    public void stopAutoRefresh() {
+        isAutoRefreshing = false;
+        if (refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        stopAutoRefresh();
+    }
 }

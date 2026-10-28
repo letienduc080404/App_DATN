@@ -41,8 +41,14 @@ public class DashboardFragment extends Fragment {
         setupCardStyles();
         observeViewModel();
 
-        // Không cần gọi fetchData() nữa vì dữ liệu tự động cập nhật từ Room
-        // viewModel.fetchData();
+        // Bắt đầu auto-refresh dữ liệu từ ThingsBoard mỗi 5s
+        viewModel.startAutoRefresh(5000);
+
+        // Click vào chip trạng thái để làm mới dữ liệu ngay lập tức
+        binding.chipStatus.setOnClickListener(v -> {
+            viewModel.refreshData();
+            Toast.makeText(requireContext(), "Đang đồng bộ dữ liệu mới nhất...", Toast.LENGTH_SHORT).show();
+        });
 
         // Xử lý sự kiện đăng xuất
         binding.btnLogout.setOnClickListener(v -> {
@@ -50,6 +56,22 @@ public class DashboardFragment extends Fragment {
                 ((com.example.myapp.MainActivity) getActivity()).performLogout();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.startAutoRefresh(5000);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (viewModel != null) {
+            viewModel.stopAutoRefresh();
+        }
     }
 
     private void setupCardStyles() {
@@ -78,7 +100,7 @@ public class DashboardFragment extends Fragment {
     private void observeViewModel() {
         // Lắng nghe trạng thái loading
         viewModel.isLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading) {
+            if (isLoading && binding.scrollView.getVisibility() != View.VISIBLE) {
                 binding.progressBar.setVisibility(View.VISIBLE);
                 binding.scrollView.setVisibility(View.GONE);
             } else {
@@ -112,11 +134,30 @@ public class DashboardFragment extends Fragment {
         binding.cardP.tvValue.setText(String.valueOf(data.getPhosphorus()));
         binding.cardK.tvValue.setText(String.valueOf(data.getPotassium()));
         binding.cardEc.tvValue.setText(String.valueOf(data.getEcValue()));
+
+        // Cập nhật nhãn thời gian và trạng thái trực tuyến
+        String timeStr = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+        binding.tvLastUpdate.setText("Cập nhật: " + timeStr);
+        binding.chipStatus.setText("● Trực tuyến");
+        binding.chipStatus.setChipBackgroundColorResource(R.color.agri_primary_green);
+
+        // Hiển thị tên thiết bị nếu có
+        if (getContext() != null) {
+            String deviceName = com.example.myapp.data.local.SessionManager.getInstance(requireContext())
+                    .getActiveDeviceName();
+            if (deviceName != null && !deviceName.isEmpty()) {
+                binding.tvSubtitleHeader.setText("Thiết bị: " + deviceName);
+            }
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (viewModel != null) {
+            viewModel.stopAutoRefresh();
+        }
         binding = null;
     }
 }

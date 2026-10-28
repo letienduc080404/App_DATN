@@ -22,4 +22,8 @@ public interface AgriRepository {
     void getAlerts(DataCallback<List<AlertMessage>> callback);
     void getDevices(DataCallback<List<DeviceStatus>> callback);
     void injectMockAdminData();
+
+    // Đồng bộ trực tiếp từ ThingsBoard Server
+    void syncDataFromThingsBoard();
+    void syncTenantDevices(Runnable onComplete);
 }

@@ -39,22 +39,19 @@ public class AgriRepositoryImpl implements AgriRepository {
     private static final String TAG = "AgriRepositoryImpl";
     private static volatile AgriRepositoryImpl instance;
     
+    private final Context context;
     private final ExecutorService executorService;
     private final AgriDao agriDao;
-    private final ThingsBoardApi thingsBoardApi;
+    private final com.example.myapp.data.local.SessionManager sessionManager;
     private final MutableLiveData<String> errorEvent = new MutableLiveData<>();
 
-    // TODO: Thay thế bằng Token, EntityType, EntityId thực tế của ThingsBoard
-    private static final String TB_TOKEN = "Bearer YOUR_JWT_TOKEN_HERE";
     private static final String ENTITY_TYPE = "DEVICE";
-    private static final String ENTITY_ID = "YOUR_DEVICE_ID_HERE";
 
     private AgriRepositoryImpl(Context context) {
+        this.context = context.getApplicationContext();
         this.executorService = Executors.newFixedThreadPool(2);
         this.agriDao = AppDatabase.getDatabase(context).agriDao();
-        
-        // Khởi tạo Retrofit API Client
-        this.thingsBoardApi = ApiClient.getClient(context).create(ThingsBoardApi.class);
+        this.sessionManager = com.example.myapp.data.local.SessionManager.getInstance(context);
     }
     
     public static AgriRepositoryImpl getInstance(Context context) {
@@ -68,12 +65,122 @@ public class AgriRepositoryImpl implements AgriRepository {
         return instance;
     }
 
+    private ThingsBoardApi getThingsBoardApi() {
+        return ApiClient.getClient(context).create(ThingsBoardApi.class);
+    }
+
+    /**
+     * Lấy danh sách thiết bị thuộc Tenant từ ThingsBoard và lưu vào Room.
+     */
+    @Override
+    public void syncTenantDevices(Runnable onComplete) {
+        String token = sessionManager.getToken();
+        if (token == null || "mock_admin_token".equals(token)) {
+            Log.d(TAG, "Đang dùng tài khoản Mock Admin hoặc chưa có token, bỏ qua đồng bộ ThingsBoard.");
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        getThingsBoardApi().getTenantDevices(50, 0).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    executorService.execute(() -> {
+                        try {
+                            JsonObject body = response.body();
+                            if (body.has("data")) {
+                                JsonArray dataArr = body.getAsJsonArray("data");
+                                List<com.example.myapp.data.local.entities.DeviceEntity> entities = new ArrayList<>();
+                                
+                                for (int i = 0; i < dataArr.size(); i++) {
+                                    JsonObject devObj = dataArr.get(i).getAsJsonObject();
+                                    String devName = devObj.has("name") ? devObj.get("name").getAsString() : "Thiết bị " + (i + 1);
+                                    String devId = devObj.getAsJsonObject("id").get("id").getAsString();
+
+                                    // Nếu chưa có active device thì chọn thiết bị đầu tiên
+                                    if (i == 0 && (sessionManager.getActiveDeviceId() == null || sessionManager.getActiveDeviceId().isEmpty())) {
+                                        sessionManager.setActiveDeviceId(devId);
+                                        sessionManager.setActiveDeviceName(devName);
+                                        Log.d(TAG, "Đã chọn thiết bị mặc định: " + devName + " (" + devId + ")");
+                                    }
+
+                                    // Tọa độ giả định trên bản đồ
+                                    double lat = 10.0451 + (i * 0.0015);
+                                    double lng = 105.7468 + (i * 0.0012);
+
+                                    entities.add(new com.example.myapp.data.local.entities.DeviceEntity(
+                                            devName, 90, true, lat, lng
+                                    ));
+                                }
+
+                                if (!entities.isEmpty()) {
+                                    agriDao.deleteAllDevices();
+                                    for (com.example.myapp.data.local.entities.DeviceEntity d : entities) {
+                                        agriDao.insertDevice(d);
+                                    }
+                                    Log.d(TAG, "Đã đồng bộ " + entities.size() + " thiết bị của Tenant vào Room.");
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Lỗi lưu danh sách thiết bị vào Room", e);
+                        }
+
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Lỗi lấy danh sách thiết bị: " + response.code());
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                Log.e(TAG, "Lỗi kết nối khi lấy thiết bị: " + t.getMessage());
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
     /**
      * Đồng bộ dữ liệu (Đồng bộ - Blocking). Dùng cho WorkManager.
      */
     public boolean syncDataSync() {
+        String token = sessionManager.getToken();
+        if (token == null || "mock_admin_token".equals(token)) {
+            return false;
+        }
+
+        String deviceId = sessionManager.getActiveDeviceId();
+        if (deviceId == null || deviceId.isEmpty()) {
+            try {
+                Response<JsonObject> devRes = getThingsBoardApi().getTenantDevices(10, 0).execute();
+                if (devRes.isSuccessful() && devRes.body() != null && devRes.body().has("data")) {
+                    JsonArray arr = devRes.body().getAsJsonArray("data");
+                    if (arr.size() > 0) {
+                        JsonObject first = arr.get(0).getAsJsonObject();
+                        deviceId = first.getAsJsonObject("id").get("id").getAsString();
+                        sessionManager.setActiveDeviceId(deviceId);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "syncDataSync: Lỗi lấy deviceId", e);
+            }
+        }
+
+        if (deviceId == null || deviceId.isEmpty()) {
+            return false;
+        }
+
         String keys = "temp,humi,ph,n,p,k,water,ec";
-        Call<JsonObject> call = thingsBoardApi.getLatestTelemetry(ENTITY_TYPE, ENTITY_ID, keys);
+        Call<JsonObject> call = getThingsBoardApi().getLatestTelemetry(ENTITY_TYPE, deviceId, keys);
         try {
             Response<JsonObject> response = call.execute();
             if (response.isSuccessful() && response.body() != null) {
@@ -83,7 +190,6 @@ public class AgriRepositoryImpl implements AgriRepository {
                 Log.e(TAG, "syncDataSync: API trả về lỗi HTTP " + response.code());
             }
         } catch (java.net.SocketTimeoutException e) {
-            // FIX: Bắt riêng SocketTimeoutException để phân loại lỗi rõ ràng hơn trong Logcat
             Log.w(TAG, "syncDataSync: Timeout trên mạng yếu", e);
         } catch (IOException e) {
             Log.e(TAG, "syncDataSync: Lỗi kết nối mạng", e);
@@ -100,10 +206,25 @@ public class AgriRepositoryImpl implements AgriRepository {
      * Gọi API lấy dữ liệu Telemetry từ ThingsBoard và lưu vào Room.
      * UI Fragment sẽ tự động cập nhật nhờ LiveData quan sát từ Room.
      */
+    @Override
     public void syncDataFromThingsBoard() {
+        String token = sessionManager.getToken();
+        if (token == null || "mock_admin_token".equals(token)) {
+            Log.d(TAG, "Đang dùng tài khoản Mock Admin, tạo dữ liệu mock ngẫu nhiên.");
+            injectMockAdminData();
+            return;
+        }
+
+        String deviceId = sessionManager.getActiveDeviceId();
+        if (deviceId == null || deviceId.isEmpty()) {
+            Log.d(TAG, "Chưa có activeDeviceId, tiến hành đồng bộ danh sách thiết bị trước...");
+            syncTenantDevices(this::syncDataFromThingsBoard);
+            return;
+        }
+
         String keys = "temp,humi,ph,n,p,k,water,ec"; // Các key cần lấy
         
-        Call<JsonObject> call = thingsBoardApi.getLatestTelemetry(ENTITY_TYPE, ENTITY_ID, keys);
+        Call<JsonObject> call = getThingsBoardApi().getLatestTelemetry(ENTITY_TYPE, deviceId, keys);
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -112,14 +233,14 @@ public class AgriRepositoryImpl implements AgriRepository {
                     saveThingsBoardDataToRoom(data);
                 } else {
                     Log.e(TAG, "Lỗi API ThingsBoard: " + response.code());
-                    errorEvent.postValue("Lỗi kết nối. Đang hiển thị dữ liệu offline");
+                    errorEvent.postValue("Lỗi API (" + response.code() + "). Đang hiển thị dữ liệu lưu tạm");
                 }
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
                 Log.e(TAG, "Lỗi kết nối tới ThingsBoard: " + t.getMessage());
-                errorEvent.postValue("Mất kết nối mạng. Đang hiển thị dữ liệu offline");
+                errorEvent.postValue("Mất kết nối mạng. Đang hiển thị dữ liệu lưu tạm");
             }
         });
     }
@@ -144,12 +265,45 @@ public class AgriRepositoryImpl implements AgriRepository {
                 
                 // Insert thẳng vào DB. LiveData trên UI sẽ tự trigger update.
                 agriDao.insertSensorData(entity);
-                Log.d(TAG, "Đã đồng bộ dữ liệu ThingsBoard vào Room thành công.");
+                Log.d(TAG, "Đã đồng bộ dữ liệu cảm biến thật từ ThingsBoard vào Room: Temp=" + temp + ", Humi=" + humi);
+
+                // Tự động kiểm tra ngưỡng bất thường để tạo Alert Message
+                checkAndGenerateAlerts(temp, humi, ph, water, ec);
             } catch (Exception e) {
-                // In đầy đủ stack trace để không bỏ sót nguyên nhân gốc
                 Log.e(TAG, "Lỗi parse dữ liệu ThingsBoard", e);
             }
         });
+    }
+
+    private void checkAndGenerateAlerts(double temp, double humi, double ph, double water, double ec) {
+        String currentTimeStr = new java.text.SimpleDateFormat(
+                "dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault()
+        ).format(new java.util.Date(System.currentTimeMillis()));
+
+        if (water > 0 && water < 10.0) {
+            agriDao.insertAlert(new AlertEntity(
+                    "Mực nước ruộng thấp nguy hiểm",
+                    "CẢNH BÁO: Mực nước ruộng hiện tại là " + water + " cm (dưới 10cm). Hãy bật máy bơm!",
+                    "DANGER",
+                    currentTimeStr
+            ));
+        }
+        if (temp > 35.0) {
+            agriDao.insertAlert(new AlertEntity(
+                    "Nhiệt độ môi trường quá cao",
+                    "CẢNH BÁO: Nhiệt độ hiện tại lên tới " + temp + " °C. Chú ý tưới làm mát cây trồng.",
+                    "WARNING",
+                    currentTimeStr
+            ));
+        }
+        if (ph > 0 && (ph < 5.5 || ph > 8.0)) {
+            agriDao.insertAlert(new AlertEntity(
+                    "Độ pH đất bất thường",
+                    "CẢNH BÁO: Độ pH đất đo được là " + ph + ". Cần cải tạo đất thích hợp.",
+                    "WARNING",
+                    currentTimeStr
+            ));
+        }
     }
 
     private double extractValue(JsonObject json, String key, double defaultValue) {

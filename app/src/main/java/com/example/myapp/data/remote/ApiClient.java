@@ -17,14 +17,21 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://letienduc247.io.vn:8080/";
     private static volatile Retrofit retrofit = null;
     
-    // Sự kiện Auth Error để UI (Activity/Fragment) có thể observe và chuyển về Login
-    private static final MutableLiveData<Boolean> authErrorEvent = new MutableLiveData<>();
+    // Sự kiện Auth Error (SingleLiveEvent) để UI có thể observe và chỉ kích hoạt một lần duy nhất khi có lỗi 401 thật
+    private static final SingleLiveEvent<Boolean> authErrorEvent = new SingleLiveEvent<>();
 
     public static LiveData<Boolean> getAuthErrorEvent() {
         return authErrorEvent;
+    }
+
+    public static void resetAuthErrorEvent() {
+        authErrorEvent.reset();
+    }
+
+    public static synchronized void resetClient() {
+        retrofit = null;
     }
 
     public static Retrofit getClient(Context context) {
@@ -32,6 +39,7 @@ public class ApiClient {
             synchronized (ApiClient.class) {
                 if (retrofit == null) {
                     SessionManager sessionManager = SessionManager.getInstance(context);
+                    String baseUrl = sessionManager.getServerUrl();
 
                     // 1. Logic Auth Interceptor
                     Interceptor authInterceptor = chain -> {
@@ -39,24 +47,27 @@ public class ApiClient {
                         String path = originalRequest.url().encodedPath();
 
                         // Bỏ qua xác thực cho các endpoint liên quan đến auth
-                        if (path.contains("login") || path.contains("register") || path.contains("forgot-password")) {
+                        if (path.contains("login") || path.contains("register") || path.contains("forgot-password") || path.contains("noauth")) {
                             return chain.proceed(originalRequest);
                         }
 
                         // Đính kèm token
                         String token = sessionManager.getToken();
                         Request.Builder requestBuilder = originalRequest.newBuilder();
-                        if (token != null && !token.isEmpty()) {
+                        if (token != null && !token.isEmpty() && !"mock_admin_token".equals(token)) {
                             requestBuilder.header("X-Authorization", "Bearer " + token);
                         }
 
                         Request newRequest = requestBuilder.build();
                         Response response = chain.proceed(newRequest);
 
-                        // Bắt lỗi 401 Unauthorized
+                        // Bắt lỗi 401 Unauthorized (chỉ kích hoạt khi token thật bị hết hạn)
                         if (response.code() == 401) {
-                            sessionManager.clearSession();
-                            authErrorEvent.postValue(true); // Phát sự kiện đăng xuất
+                            String curToken = sessionManager.getToken();
+                            if (curToken != null && !curToken.isEmpty() && !"mock_admin_token".equals(curToken)) {
+                                sessionManager.clearSession();
+                                authErrorEvent.postValue(true); // Phát sự kiện đăng xuất
+                            }
                         }
 
                         return response;
@@ -75,7 +86,7 @@ public class ApiClient {
                             .build();
 
                     retrofit = new Retrofit.Builder()
-                            .baseUrl(BASE_URL)
+                            .baseUrl(baseUrl)
                             .client(client)
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();

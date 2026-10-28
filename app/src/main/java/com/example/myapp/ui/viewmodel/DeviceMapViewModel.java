@@ -32,5 +32,7 @@ public class DeviceMapViewModel extends AndroidViewModel {
         return isLoading;
     }
 
-    // Không cần fetchDevices() chủ động vì Room sẽ tự đẩy dữ liệu
+    public void refreshDevices() {
+        repository.syncTenantDevices(null);
+    }
 }

@@ -67,6 +67,7 @@ public class DeviceMapFragment extends Fragment implements OnMapReadyCallback {
 
         // Khởi tạo ViewModel TRƯỚC khi khởi tạo bản đồ
         viewModel = new ViewModelProvider(this).get(DeviceMapViewModel.class);
+        viewModel.refreshDevices();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map_container);
