@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MyApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/agri_primary_green</item>
+        <item name="colorSecondary">@color/agri_secondary_blue</item>
+        <item name="colorSecondaryContainer">@color/accent_green_light</item>
+        <item name="colorOnSecondaryContainer">@color/agri_primary_green</item>
+    </style>
+</resources>

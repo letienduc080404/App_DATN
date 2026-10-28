@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    fragment_chat_ai_local.xml — Material Design 3 Premium Chat UI
+    ────────────────────────────────────────────────────────────────
+    ViewBinding IDs giữ nguyên 100% cho ChatAILocalFragment.java:
+      - rv_chat      (RecyclerView tin nhắn)
+      - input_bar    (view nhóm nhập liệu — dùng ID cha LinearLayout → đặt trên card)
+      - btn_voice    (MaterialButton nút mic)
+      - et_message   (EditText ô nhập)
+      - btn_send     (MaterialButton nút gửi)
+
+    Thiết kế:
+      - Nền chat gradient trắng nhạt → off-white
+      - Floating pill input bar cách đáy 16dp, elevation 8dp
+      - RecyclerView padding bottom đủ để không bị che bởi input bar
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/modern_background">
+
+    <!-- ══════════════════════════════════════════
+         STICKY TOP HEADER — AgriAI Assistant
+         ══════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/header_chat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/modern_background"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Avatar AI tròn xanh nhạt -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            app:cardBackgroundColor="@color/accent_green_light"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/agri_primary_green"
+            app:strokeWidth="2dp">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_menu_view"
+                app:tint="@color/agri_primary_green"
+                android:contentDescription="AgriAI" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Tên + trạng thái online -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="AgriAI Assistant"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Chấm online xanh -->
+                <View
+                    android:layout_width="7dp"
+                    android:layout_height="7dp"
+                    android:background="@drawable/bg_avatar_ai"
+                    android:backgroundTint="@color/agri_primary_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="Đang hoạt động"
+                    android:textColor="@color/agri_primary_green"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Nút xóa lịch sử chat -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_clear_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.TextButton.Icon"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconTint="@color/text_secondary"
+            android:text="Xóa"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <!-- Đường phân cách dưới header -->
+    <View
+        android:id="@+id/divider_chat_header"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/card_stroke"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_chat" />
+
+    <!-- ══════════════════════════════════════════
+         DANH SÁCH TIN NHẮN
+         Padding bottom lớn để không bị che bởi floating input bar
+         ══════════════════════════════════════════ -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_chat"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="96dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_chat_header"
+        tools:listitem="@layout/item_chat_ai" />
+
+    <!-- ══════════════════════════════════════════
+         FLOATING PILL INPUT BAR
+         - MaterialCardView elevation 8dp → nổi lên trên list
+         - Cách đáy 16dp
+         - ID "input_bar" giữ trên wrapper để Java binding vẫn hợp lệ
+         ══════════════════════════════════════════ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/input_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/modern_card"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <!-- Nút Micro (Voice Input) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_voice"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:backgroundTint="@color/accent_green_light"
+                app:icon="@android:drawable/ic_btn_speak_now"
+                app:iconTint="@color/agri_primary_green"
+                app:iconSize="22dp"
+                app:cornerRadius="23dp" />
+
+            <!-- EditText nhập liệu -->
+            <EditText
+                android:id="@+id/et_message"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="Hỏi về cây trồng, đất đai..."
+                android:textColorHint="#AAAAAA"
+                android:minHeight="48dp"
+                android:maxLines="4"
+                android:paddingStart="10dp"
+                android:paddingEnd="4dp"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:imeOptions="actionSend" />
+
+            <!-- Nút Gửi (Send) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_send"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:backgroundTint="@color/agri_primary_green"
+                app:icon="@android:drawable/ic_menu_send"
+                app:iconTint="@android:color/white"
+                app:iconSize="22dp"
+                app:cornerRadius="23dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_alert.xml — Material Design 3 Premium Alert Card
+    ───────────────────────────────────────────────────────
+    ViewBinding IDs giữ nguyên 100% cho AlertAdapter.java:
+      - view_priority_indicator  (View — ẩn, dùng để setBackgroundColor từ Java)
+      - tv_alert_title           (TextView tiêu đề)
+      - tv_timestamp             (TextView thời gian)
+      - tv_alert_content         (TextView nội dung)
+      - btn_detail               (MaterialButton Tonal)
+
+    Thiết kế:
+      - Icon khối vuông bo góc BÊN TRÁI với nền màu nhạt theo priority
+      - Tiêu đề 18sp bold, nội dung 14sp xám
+      - TonalButton "Xem chi tiết" góc phải dưới
+      - Chip priority label phía trên phải
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/modern_card"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
+
+    <!-- View ẩn giữ ID view_priority_indicator cho Java setBackgroundColor() -->
+    <View
+        android:id="@+id/view_priority_indicator"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- ── Left: Khối icon vuông bo góc lớn ── -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_alert_icon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            app:cardBackgroundColor="@color/accent_red_light"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_alert_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_dialog_alert"
+                app:tint="@color/agri_error_red"
+                tools:ignore="ContentDescription" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Top Right: Chip mức độ ưu tiên + Timestamp ── -->
+        <LinearLayout
+            android:id="@+id/layout_top_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/card_alert_icon"
+            app:layout_constraintTop_toTopOf="@id/card_alert_icon">
+
+            <!-- Chip mức độ (NGUY HIỂM / CẢNH BÁO / THÔNG TIN) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_priority_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/accent_red_light"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <TextView
+                    android:id="@+id/tv_priority_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:text="NGUY HIỂM"
+                    android:textColor="@color/agri_error_red"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04"
+                    tools:text="NGUY HIỂM" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <!-- Timestamp -->
+            <TextView
+                android:id="@+id/tv_timestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="4dp"
+                android:text="10:30"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                tools:text="14:35" />
+
+        </LinearLayout>
+
+        <!-- ── Tiêu đề cảnh báo ── -->
+        <TextView
+            android:id="@+id/tv_alert_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:text="Tiêu đề cảnh báo"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:lineSpacingMultiplier="1.1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/card_alert_icon"
+            app:layout_constraintTop_toBottomOf="@id/layout_top_right" />
+
+        <!-- Đường kẻ mỏng phân cách -->
+        <View
+            android:id="@+id/divider_content"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:background="@color/card_stroke"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/card_alert_icon" />
+
+        <!-- ── Nội dung mô tả chi tiết ── -->
+        <TextView
+            android:id="@+id/tv_alert_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Nội dung chi tiết của cảnh báo sẽ được hiển thị ở đây."
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingMultiplier="1.4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_content" />
+
+        <!-- ── Bottom Row: Icon info + TonalButton "Xem chi tiết" ── -->
+        <LinearLayout
+            android:id="@+id/layout_bottom_row"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_alert_content">
+
+            <!-- Tip text bên trái -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="6dp"
+                android:text="Nhấn để xem đầy đủ"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:alpha="0.7" />
+
+            <!--
+                TonalButton MD3: nền màu nhạt, chữ đậm, touch target >= 48dp.
+                Giữ ID btn_detail.
+            -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_detail"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Xem chi tiết"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/accent_red_light"
+                app:cornerRadius="24dp"
+                android:textColor="@color/agri_error_red" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

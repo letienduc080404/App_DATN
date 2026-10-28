@@ -1,0 +1,30 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MyApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Thay thế triệt để màu tím mặc định của Material 3 bằng tone màu xanh lá nông nghiệp -->
+        <item name="colorPrimary">@color/agri_primary_green</item>
+        <item name="colorSecondary">@color/agri_secondary_blue</item>
+        <item name="colorSecondaryContainer">@color/accent_green_light</item>
+        <item name="colorOnSecondaryContainer">@color/agri_primary_green</item>
+    </style>
+
+    <style name="Theme.MyApp" parent="Base.Theme.MyApp" />
+
+    <!--
+        ShapeAppearance cho Map Card:
+        Bo 2 góc dưới (bottomLeft + bottomRight) = 32dp
+        2 góc trên vuông hoàn toàn = 0dp
+        Tạo hiệu ứng "Layered Design" — bản đồ chồng lên danh sách
+    -->
+    <style name="ShapeAppearance.MapCardBottomRounded" parent="">
+        <item name="cornerFamilyBottomLeft">rounded</item>
+        <item name="cornerFamilyBottomRight">rounded</item>
+        <item name="cornerSizeBottomLeft">32dp</item>
+        <item name="cornerSizeBottomRight">32dp</item>
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+    </style>
+
+</resources>

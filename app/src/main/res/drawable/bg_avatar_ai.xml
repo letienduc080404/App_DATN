@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nền gradient nhẹ cho avatar AI tròn — xanh lá nhạt đến xanh lá đậm hơn một chút -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#E8F5E9" />
+</shape>

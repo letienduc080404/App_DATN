@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AgriGuard Primary Colors -->
+    <color name="agri_primary_green">#2E7D32</color>
+    <color name="agri_secondary_blue">#1976D2</color>
+    <color name="agri_tertiary_yellow">#FBC02D</color>
+    <color name="agri_error_red">#D32F2F</color>
+
+    <!-- Modern Premium Palette -->
+    <color name="modern_background">#F8F9FA</color>
+    <color name="modern_card">#FFFFFF</color>
+
+    <!-- Light Accents for Icons -->
+    <color name="accent_green_light">#E8F5E9</color>
+    <color name="accent_blue_light">#E3F2FD</color>
+    <color name="accent_yellow_light">#FFFDE7</color>
+    <color name="accent_red_light">#FFEBEE</color>
+
+    <color name="agri_background">#FCF9F8</color>
+
+    <!-- UI Standard Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#1C1B1B</color>
+    <color name="text_primary">#1C1B1B</color>
+    <color name="text_secondary">#444746</color>
+    <color name="divider_color">#C4C7C5</color>
+
+    <!-- State Colors -->
+    <color name="ripple_green">#200D631B</color>
+
+    <!-- MD3 Premium: viền thẻ siêu nhạt -->
+    <color name="card_stroke">#EBEBEB</color>
+
+    <!-- Accent Teal cho EC / độ mặn (thay thế màu tím) -->
+    <color name="accent_teal_light">#E0F2F1</color>
+    <color name="agri_teal">#00796B</color>
+</resources>

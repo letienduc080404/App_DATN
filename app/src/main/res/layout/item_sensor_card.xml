@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_sensor_card.xml — Material Design 3 Premium Sensor Card
+    ─────────────────────────────────────────────────────────────
+    ViewBinding IDs được giữ nguyên 100% để tương thích DashboardFragment.java:
+      - iv_sensor_icon  (ImageView icon)
+      - view_indicator  (View nền tròn màu icon)
+      - tv_value        (TextView giá trị lớn)
+      - tv_unit         (TextView đơn vị)
+      - tv_label        (TextView tên thông số)
+-->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/modern_card"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="18dp">
+
+        <!-- ── Icon container: hình tròn màu nhạt ── -->
+        <View
+            android:id="@+id/view_indicator"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_sensor_icon_circle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Icon cảm biến nằm giữa vòng tròn -->
+        <ImageView
+            android:id="@+id/iv_sensor_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_humidity"
+            app:layout_constraintBottom_toBottomOf="@id/view_indicator"
+            app:layout_constraintEnd_toEndOf="@id/view_indicator"
+            app:layout_constraintStart_toStartOf="@id/view_indicator"
+            app:layout_constraintTop_toTopOf="@id/view_indicator"
+            tools:tint="@color/agri_secondary_blue" />
+
+        <!-- ── Giá trị chính (siêu to, in đậm) ── -->
+        <TextView
+            android:id="@+id/tv_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:fontFamily="sans-serif-black"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.02"
+            android:text="--"
+            android:textColor="@color/text_primary"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_indicator"
+            tools:text="28.5" />
+
+        <!-- Đơn vị (nhỏ hơn, baseline align với giá trị) -->
+        <TextView
+            android:id="@+id/tv_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="4dp"
+            android:text="°C"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/tv_value"
+            app:layout_constraintStart_toEndOf="@id/tv_value" />
+
+        <!-- ── Nhãn tên thông số (dưới cùng, xám nhạt) ── -->
+        <TextView
+            android:id="@+id/tv_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Nhiệt độ"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:letterSpacing="0.01"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_value" />
+
+        <!-- Đường kẻ mỏng trang trí dưới label -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card_accent_line"
+            android:backgroundTint="@color/agri_primary_green"
+            android:backgroundTintMode="src_in"
+            android:alpha="0.18"
+            android:id="@+id/view_accent_line"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

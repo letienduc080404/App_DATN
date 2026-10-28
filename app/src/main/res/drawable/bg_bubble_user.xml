@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_bubble_user.xml — Bong bóng chat của User
+    ────────────────────────────────────────────────
+    Bo góc bất đối xứng kiểu "đuôi bong bóng":
+      - 3 góc bo lớn 24dp (topLeft, topRight, bottomLeft)
+      - Góc dưới phải bo nhỏ 4dp → tạo đuôi nhọn về phía avatar user
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#2E7D32" />
+    <corners
+        android:topLeftRadius="24dp"
+        android:topRightRadius="24dp"
+        android:bottomLeftRadius="24dp"
+        android:bottomRightRadius="4dp" />
+</shape>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyApp</string>
+    <!-- Alert priority labels -->
+    <string name="priority_danger">⚠ NGUY HIỂM</string>
+    <string name="priority_warning">⚡ CẢNH BÁO</string>
+    <string name="priority_info">ℹ THÔNG TIN</string>
+</resources>

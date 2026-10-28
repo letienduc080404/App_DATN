@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_chat_user.xml — Bong bóng tin nhắn User
+    ──────────────────────────────────────────────
+    ViewBinding ID giữ nguyên: tv_message
+    Layout: tin nhắn căn phải, avatar tròn bên phải
+    Bong bóng: màu xanh lá đậm, 3 góc bo 24dp, góc dưới phải 4dp (đuôi bong bóng)
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="end"
+    android:orientation="horizontal"
+    android:paddingStart="52dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
+
+    <!-- Bubble container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="vertical">
+
+        <!-- Bong bóng tin nhắn với gradient xanh lá -->
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_bubble_user"
+            android:lineSpacingMultiplier="1.35"
+            android:maxWidth="260dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="11dp"
+            android:paddingBottom="11dp"
+            android:text="User message"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+        <!-- Timestamp nhỏ dưới bubble -->
+        <TextView
+            android:id="@+id/tv_time_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="4dp"
+            android:text="14:30"
+            android:textColor="#AAAAAA"
+            android:textSize="11sp"
+            android:gravity="end" />
+
+    </LinearLayout>
+
+    <!-- Avatar User tròn xanh đậm -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        app:cardBackgroundColor="#2E7D32"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="U"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>
